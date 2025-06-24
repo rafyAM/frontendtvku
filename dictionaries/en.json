@@ -1,0 +1,14 @@
+{
+  "navbar": {
+    "home": "Home",
+    "news": "News",
+    "language": "Language",
+    "indonesia": "Indonesian",
+    "english": "English"
+  },
+  "berita_page": {
+    "all_news": "All News",
+    "latest_news": "Latest News",
+    "news_category": "News Category"
+  }
+}

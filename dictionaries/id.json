@@ -1,0 +1,14 @@
+{
+  "navbar": {
+    "home": "Beranda",
+    "news": "Berita",
+    "language": "Bahasa",
+    "indonesia": "Indonesia",
+    "english": "Inggris"
+  },
+  "berita_page": {
+    "all_news": "Semua Berita",
+    "latest_news": "Berita Terbaru",
+    "news_category": "Kategori Berita"
+  }
+}

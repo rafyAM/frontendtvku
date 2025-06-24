@@ -5,11 +5,27 @@ import axios from "axios";
 import { kategori as KategoriType, berita as BeritaType } from "../types";
 import Link from "next/link";
 import Image from "next/image";
+import { usePathname, useRouter } from "next/navigation";
 
-const Navbar = () => {
+interface NavbarProps {
+  lang?: "id" | "en";
+  dictionary?: any;
+}
+
+const Navbar = ({
+  lang: propLang,
+  dictionary: propDictionary,
+}: NavbarProps) => {
+  const router = useRouter();
+  const pathname = usePathname();
+
+  const activeLang = propLang || (pathname.startsWith("/en") ? "en" : "id");
+
   const [categories, setCategories] = useState<KategoriType[]>([]);
   const [megaMenuNews, setMegaMenuNews] = useState<BeritaType[]>([]);
-  const [activeMegaMenuCategory, setActiveMegaMenuCategory] = useState<number | null>(null);
+  const [activeMegaMenuCategory, setActiveMegaMenuCategory] = useState<
+    number | null
+  >(null);
   const [loadingMegaMenuNews, setLoadingMegaMenuNews] = useState(false);
   const baseurl = process.env.NEXT_PUBLIC_BASE_URL;
 
@@ -26,19 +42,23 @@ const Navbar = () => {
     getKategori();
   }, [baseurl]);
 
-  const fetchNewsForMegaMenu = useCallback(async (categoryId: number) => {
-    setLoadingMegaMenuNews(true);
-    try {
-      const res = await axios.get(`${baseurl}/berita?id_kategori=${categoryId}`);
-      setMegaMenuNews(res.data.data);
-    } catch (error) {
-      console.error(`Error fetching news for category ${categoryId}:`, error);
-      setMegaMenuNews([]);
-    } finally {
-      setLoadingMegaMenuNews(false);
-    }
-  }, [baseurl]);
-
+  const fetchNewsForMegaMenu = useCallback(
+    async (categoryId: number) => {
+      setLoadingMegaMenuNews(true);
+      try {
+        const res = await axios.get(
+          `${baseurl}/berita?id_kategori=${categoryId}`
+        );
+        setMegaMenuNews(res.data.data);
+      } catch (error) {
+        console.error(`Error fetching news for category ${categoryId}:`, error);
+        setMegaMenuNews([]);
+      } finally {
+        setLoadingMegaMenuNews(false);
+      }
+    },
+    [baseurl]
+  );
 
   const handleMegaMenuCategoryHover = (categoryId: number) => {
     setActiveMegaMenuCategory(categoryId);
@@ -47,7 +67,29 @@ const Navbar = () => {
 
   const handleMegaMenuCategoryLeave = () => {
     setActiveMegaMenuCategory(null);
-    setMegaMenuNews([]); 
+    setMegaMenuNews([]);
+  };
+
+  const handleLanguageChange = (newLang: "id" | "en") => {
+    // Jika kita sudah di dalam path berita (e.g., /id/berita atau /en/berita/show/...)
+    if (pathname.startsWith(`/${activeLang}/berita`)) {
+      const newPathname = pathname.replace(`/${activeLang}/`, `/${newLang}/`);
+      router.push(newPathname);
+    } else {
+      // Jika kita di halaman lain (e.g., /), arahkan ke halaman berita dengan bahasa baru
+      router.push(`/${newLang}/berita`);
+    }
+  };
+
+  // Gunakan dictionary yang di-pass, atau fallback ke versi default jika tidak ada
+  const dictionary = propDictionary || {
+    Navbar: {
+      home: "Beranda",
+      news: "Berita",
+      language: "Bahasa",
+      indonesia: "Indonesia",
+      english: "Inggris",
+    },
   };
 
   return (
@@ -86,7 +128,7 @@ const Navbar = () => {
                   >
                     <Link
                       className="menu-link"
-                      href={`/berita/${item.id_kategori}`} 
+                      href={`/berita/${item.id_kategori}`}
                     >
                       <div>{item.nama}</div>
                     </Link>
@@ -112,9 +154,15 @@ const Navbar = () => {
                                 <Link
                                   key={item.id_kategori}
                                   className={`nav-link bg-color-home ${
-                                    activeMegaMenuCategory === item.id_kategori ? "active" : ""
+                                    activeMegaMenuCategory === item.id_kategori
+                                      ? "active"
+                                      : ""
                                   }`}
-                                  onMouseEnter={() => handleMegaMenuCategoryHover(item.id_kategori)}
+                                  onMouseEnter={() =>
+                                    handleMegaMenuCategoryHover(
+                                      item.id_kategori
+                                    )
+                                  }
                                   onMouseLeave={handleMegaMenuCategoryLeave}
                                   href={`/berita/${item.id_kategori}`}
                                 >
@@ -132,14 +180,18 @@ const Navbar = () => {
                               id="v-pills-tabContent"
                             >
                               {loadingMegaMenuNews ? (
-                                <div className="text-center p-4">Loading news...</div>
+                                <div className="text-center p-4">
+                                  Loading news...
+                                </div>
                               ) : megaMenuNews.length > 0 ? (
                                 <div className="row justify-content-around posts-md">
                                   {megaMenuNews.slice(0, 3).map((item) => (
                                     <div className="col-4" key={item.id}>
                                       <div className="entry">
                                         <div className="entry-image mb-3">
-                                          <Link href={`/berita/show/${item.id}`}>
+                                          <Link
+                                            href={`/berita/show/${item.id}`}
+                                          >
                                             <Image
                                               src={item.cover}
                                               alt={item.judul}
@@ -159,7 +211,9 @@ const Navbar = () => {
                                         </div>
                                         <div className="entry-title title-xs nott">
                                           <h3 className="mb-1">
-                                            <Link href={`/berita/show/${item.id}`}>
+                                            <Link
+                                              href={`/berita/show/${item.id}`}
+                                            >
                                               {item.judul}
                                             </Link>
                                           </h3>
@@ -168,7 +222,9 @@ const Navbar = () => {
                                           <ul>
                                             <li>
                                               <i className="icon-time"></i>
-                                              {new Date(item.waktu_publish).toLocaleDateString('id-ID')}
+                                              {new Date(
+                                                item.waktu_publish
+                                              ).toLocaleDateString("id-ID")}
                                             </li>
                                           </ul>
                                         </div>
@@ -178,7 +234,9 @@ const Navbar = () => {
                                 </div>
                               ) : (
                                 <div className="text-center p-4">
-                                  {activeMegaMenuCategory ? "No news found for this category." : "Hover over a category to see news."}
+                                  {activeMegaMenuCategory
+                                    ? "No news found for this category."
+                                    : "Hover over a category to see news."}
                                 </div>
                               )}
                             </div>
@@ -187,6 +245,40 @@ const Navbar = () => {
                       </div>
                     </div>
                   </div>
+                </li>
+                <li className="menu-item">
+                  <div className="menu-link" style={{ cursor: "pointer" }}>
+                    <div>
+                      {dictionary.navbar.language}
+                      <i className="icon-angle-down"></i>
+                    </div>
+                  </div>
+                  <ul className="sub-menu-container">
+                    <li className="menu-item">
+                      <a
+                        className="menu-link"
+                        href="#"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleLanguageChange("id");
+                        }}
+                      >
+                        <div>{dictionary.navbar.indonesia}</div>
+                      </a>
+                    </li>
+                    <li className="menu-item">
+                      <a
+                        className="menu-link"
+                        href="#"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleLanguageChange("en");
+                        }}
+                      >
+                        <div>{dictionary.navbar.english}</div>
+                      </a>
+                    </li>
+                  </ul>
                 </li>
               </ul>
             </nav>

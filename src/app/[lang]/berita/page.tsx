@@ -4,10 +4,10 @@ import React from "react";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import { berita, kategori } from "../types";
-import SideBar from "../components/sideBar";
+import { berita, kategori } from "../../types";
+import SideBar from "../../components/sideBar";
 import Link from "next/link";
-import Carousel from "../components/carousel";
+import Carousel from "../../components/carousel";
 import { convert } from "html-to-text"; // Import the convert function
 
 export default function Page() {
