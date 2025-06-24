@@ -1,0 +1,481 @@
+/* ----------------------------------------------------------------
+	Custom CSS
+
+	Add all your Custom Styled CSS here for New Styles or
+	Overwriting Default Theme Styles for Better Handling Updates
+-----------------------------------------------------------------*/
+
+/* Arrows */
+.slick-prev,
+.slick-next {
+  font-size: 30px;
+  line-height: 0;
+  /*  */
+  position: absolute;
+  top: 40%;
+  /*  */
+  display: block;
+  /*  */
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  -webkit-transform: translate(0, -50%);
+  -ms-transform: translate(0, -50%);
+  transform: translate(0, -50%);
+  /*  */
+  /* cursor: pointer; */
+  /*  */
+  color: #444;
+  border: none;
+  outline: none;
+  background: transparent;
+}
+
+.slick-prev {
+  left: -15px;
+  z-index: 1;
+}
+
+.slick-next {
+  right: -15px;
+}
+
+.slick-prev.slick-disabled,
+.slick-next.slick-disabled {
+  opacity: 0;
+}
+
+/* margin for each items */
+.slick-slide {
+  margin: 0 5px;
+}
+
+
+
+
+/* screen with <573px width */
+.myslick-item {
+  width: 40vw;
+  max-width: 299px;
+}
+
+
+
+.myslick-title {
+  margin-bottom: 10px;
+  font-size: 23px;
+  font-weight: bold;
+}
+
+.myslick-divider {
+  height: 40px;
+}
+
+
+
+.fancy-title {
+  margin-bottom: 15px;
+}
+
+
+
+#menu-lainnya {
+  display: none;
+  top: 1px;
+}
+
+.entry-content-home {
+  margin-top: 10px;
+}
+
+.portfolio-home {
+  margin-bottom: 20px;
+}
+
+
+@media only screen and (min-width: 992px) {
+  .move-to-bottom {
+    margin-top: 100px;
+  }
+
+  #menu-lainnya {
+    display: inline;
+  }
+}
+
+/* .swiper-slide-bg {
+  filter: brightness(50%);
+} */
+
+.entry-image-seputarudinus {
+  margin-bottom: 0px;
+}
+
+.entry-seputarudinus {
+  margin-bottom: 0px !important;
+}
+
+.myslick-by-title-item-caption {
+  font-size: 3.2vw;
+  margin-top: .4rem;
+  line-height: 4.2vw;
+  color: #444;
+  /* font-weight: 500; */
+  /* font-family: 'Poppins', sans-serif; */
+}
+
+.myslick-item-caption {
+  color: #444;
+  font-weight: 500;
+  font-family: 'Poppins', sans-serif;
+  font-size: 3vw;
+  line-height: 3.9vw;
+  margin-top: 1vw;
+}
+
+.agrey {
+  color: #444;
+}
+
+#header.transparent-header.dark {
+  background: #00000047;
+}
+
+.rowjadwalsiar {
+  margin-top: 20px;
+}
+
+.rowjadwalsiar>* {
+  padding-right: 0.3rem;
+  padding-left: 0.3rem;
+}
+
+.list-type4 li {
+  position: relative;
+  display: block;
+  padding: .4em .4em .4em 2em;
+  /* *padding: .4em; */
+  padding: .4em;
+  margin: .5em 0;
+  background: #5975D9;
+  color: white;
+  text-decoration: none;
+  box-shadow: inset 0.5em 0 #3053D0;
+  -webkit-transition: box-shadow 1s;
+  transition: box-shadow 1s;
+}
+
+.list-type4 li:hover {
+  box-shadow: inset 2em 0 #3053D0;
+}
+
+.entry-siar {
+  padding-bottom: 0px !important;
+}
+
+.widget-siaran {
+  border: solid 1px grey;
+  border-radius: 15px;
+  padding-right: 10px;
+  padding-left: 10px;
+  padding-bottom: 10px;
+}
+
+.widget-siaran:first-child {
+  margin-top: 50px;
+}
+
+/* kerjasama yang terjalin */
+/* .kerjasamaterjalin{
+  hei
+} */
+
+.kerjasamaterjalin-item-caption {
+  color: #444;
+  /* font-weight: 500; */
+  /* font-family: 'Poppins', sans-serif; */
+  /* font-size: 3vw; */
+  /* line-height: 3.9vw; */
+  margin-top: 1vw;
+  text-align: center;
+}
+
+.kerjasamaterjalin-item {
+
+  /* padding: 10px; */
+  /* height: 200px; */
+  position: relative;
+  /* text-align: center; */
+  /* text-align: center; */
+
+}
+
+.kerjasamaterjalin-item-img {
+  width: 150px;
+  height: auto;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.kerjasamaterjalin-item-inner {
+
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  /*  width: 200px;
+  height: 200px; */
+
+  /* margin: 0;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  -ms-transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%); */
+
+}
+
+.image-center {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  width: 50%;
+}
+
+
+/* mirip netflix */
+/* .myslick{ */
+/* margin-top: -100px; */
+/* padding-left: 100px; */
+/* } */
+
+/* .myslick-item{
+  padding: 100px 0px;
+  transition: transform .2s;
+} */
+/* .myslick-a:first-child{
+  margin-left: 30px;
+  padding-left: 100px;
+} */
+/* .myslick-a{
+  padding-left: 100px;
+  transform: translate(-100px,0px);
+} */
+/* .myslick-item:hover { */
+/* -ms-transform: scale(1.2); */
+/* IE 9 */
+/* -webkit-transform: scale(1.2); */
+/* Safari 3-8 */
+/* transform: scale(1.2); */
+/* } */
+/* .slick-slider{
+  padding-left: 100px;
+} */
+/* mirip netflix end */
+
+
+/* slick slider our program */
+.our-program-beranda-slick>.slick-list>.slick-track>.slick-slide>div {
+  /* width: 340px;
+  height: 480.65px; */
+  width: 100%;
+  height: auto;
+  background-color: white;
+  margin: 0 auto;
+  border-radius: 5px;
+  background-size: auto 100%;
+  background-repeat: no-repeat;
+  background-position: center center;
+  transition: background-size 0.5s;
+}
+
+.our-program-beranda-slick .slick-arrow {
+  top: 50%;
+}
+
+
+
+@media only screen and (min-width: 456px) {
+  .myslick-item-caption {
+    font-size: 2.5vw;
+    /* line-height: 3.9vw; */
+  }
+
+  .kerjasama-item-caption {
+    font-size: 2.5vw;
+    /* line-height: 3.9vw; */
+  }
+}
+
+@media only screen and (min-width: 576px) {
+  .myslick-item {
+    width: 35vw;
+    max-width: 228px;
+  }
+
+  .myslick-item-caption {
+    font-size: 2vw;
+    /* line-height: 3.9vw; */
+  }
+
+  .kerjasama-item-caption {
+    font-size: 2vw;
+    /* line-height: 3.9vw; */
+  }
+
+  .myslick-by-title-item-caption {
+    font-size: 3vw;
+  }
+
+
+  /* slick slider our program */
+  /* .our-program-beranda-slick>.slick-list>.slick-track>.slick-slide>div { */
+  /* width: 235px;
+    height: 332.2px; */
+  /* width: 100%;
+    height: auto; */
+  /* } */
+}
+
+@media only screen and (min-width: 768px) {
+  .myslick-item {
+    width: 38vw;
+    max-width: 299px;
+  }
+
+  .myslick-item-caption {
+    font-size: 1rem;
+    margin-top: .6rem;
+    line-height: 3.2vw;
+  }
+
+  .kerjasama-item-caption {
+    font-size: 1rem;
+    margin-top: .6rem;
+    line-height: 3.2vw;
+  }
+
+  .myslick-by-title-item-caption {
+    font-size: 2.2vw;
+    line-height: 3vw;
+  }
+
+  .widget-siaran:first-child {
+    margin-top: 0px;
+  }
+
+  /* slick slider our program */
+  /* .our-program-beranda-slick>.slick-list>.slick-track>.slick-slide>div { */
+  /* width: 210px;
+    height: 296.87px; */
+  /* width: 100%;
+    height: auto; */
+  /* } */
+}
+
+@media only screen and (min-width: 992px) {
+  .myslick-item-caption {
+    margin-top: .7rem;
+    line-height: 2.6vw;
+  }
+
+  .kerjasama-item-caption {
+    margin-top: .7rem;
+    line-height: 2.6vw;
+  }
+
+  .myslick-by-title-item-caption {
+    font-size: 1.7vw;
+    line-height: 2.4vw;
+  }
+
+  .rowjadwalsiar {
+    margin-top: 0px;
+  }
+
+
+  /* slick slider our program */
+  /* .our-program-beranda-slick>.slick-list>.slick-track>.slick-slide>div { */
+  /* width: 215px;
+    height: 303.94px; */
+  /* width: 100%;
+    height: auto; */
+  /* } */
+
+  .our-program-beranda-slick .slick-arrow {
+    background-color: #f1f2f3;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    filter: drop-shadow(0 0 4px rgba(0, 0, 0, 0.16));
+  }
+
+  .our-program-beranda-slick .slick-prev i {
+    margin-left: -3px;
+  }
+
+  .our-program-beranda-slick .slick-next i {
+    margin-right: -3px;
+  }
+
+  .our-program-beranda-slick .slick-list .slick-track .slick-slide div:hover {
+    background-size: auto 104%;
+  }
+
+}
+
+@media only screen and (min-width: 1200px) {
+  .myslick-item-caption {
+    /* margin-top: .7rem; */
+    line-height: 2.1vw;
+  }
+
+  .kerjasama-item-caption {
+    /* margin-top: .7rem; */
+    line-height: 2.1vw;
+  }
+
+  .myslick-by-title-item-caption {
+    font-size: 1.5vw;
+    line-height: 2vw;
+  }
+
+  /* slick slider our program */
+  /* .our-program-beranda-slick>.slick-list>.slick-track>.slick-slide>div {
+    width: 260px;
+    height: 367.5px;
+  } */
+
+}
+
+@media only screen and (min-width: 1400px) {
+  .myslick-item-caption {
+    /* margin-top: .7rem; */
+    line-height: 1.8vw;
+  }
+
+  .kerjasama-item-caption {
+    /* margin-top: .7rem; */
+    line-height: 1.8vw;
+  }
+
+  .kerjasamaterjalin-item-img {
+    width: 120px;
+  }
+
+}
+
+@media only screen and (min-width: 1600px) {
+  .myslick-item-caption {
+    /* margin-top: .7rem; */
+    /* line-height: 1.5vw; */
+    line-height: 25px;
+  }
+
+  .kerjasama-item-caption {
+    /* margin-top: .7rem; */
+    /* line-height: 1.5vw; */
+    line-height: 25px;
+  }
+}

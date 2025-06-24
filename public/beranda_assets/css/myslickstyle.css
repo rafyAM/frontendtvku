@@ -1,0 +1,72 @@
+
+
+/* .slick-prev:hover, */
+/* .slick-prev:focus, */
+/* .slick-next:hover, */
+/* .slick-next:focus */
+/* { */
+/* color: transparent; */
+/* outline: none; */
+/* background: transparent; */
+/* } */
+
+/* .slick-prev:before, */
+/* .slick-next:before */
+/* { */
+/* font-family: 'slick'; */
+/* font-size: 20px; */
+/* line-height: 1; */
+/*  */
+/* opacity: .75; */
+/* color: white; */
+/*  */
+/* -webkit-font-smoothing: antialiased; */
+/* -moz-osx-font-smoothing: grayscale; */
+/* } */
+
+
+
+/* .slick-prev:before */
+/* { */
+/* content: '←'; */
+/* } */
+
+
+
+/* .slick-next:before */
+/* { */
+/* content: '→'; */
+/* } */
+
+
+
+/* .myslick-item{ */
+/* padding: 5px; */
+/* } */
+
+
+/* the parent */
+/* .slick-list { */
+  /* margin: 0 -26px; */
+/* } */
+
+/* .myslick-img { */
+  /* height: 23vw; */
+  /* max-height: 168px; */
+/* } */
+/*  */
+/* @media only screen and (min-width: 573px) { */
+  /* .myslick-img { */
+    /* height: 20vw; */
+    /* max-height: 122px; */
+  /* } */
+/* } */
+/* @media only screen and (min-width: 768px) { */
+  /* .myslick-img { */
+    /* height: 22vw; */
+    /* max-height: 168px; */
+  /* } */
+/* } */
+
+
+
