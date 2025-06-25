@@ -9,6 +9,8 @@
   "berita_page": {
     "all_news": "All News",
     "latest_news": "Latest News",
-    "news_category": "News Category"
+    "news_category": "News Category",
+    "popular_news" : "Popular News"
+
   }
 }

@@ -9,6 +9,7 @@ import { usePathname, useRouter } from "next/navigation";
 
 interface NavbarProps {
   lang?: "id" | "en";
+  // eslint-disable-next-line 
   dictionary?: any;
 }
 
