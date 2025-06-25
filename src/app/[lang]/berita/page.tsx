@@ -14,9 +14,10 @@ export default function BeritaPage() {
   const params = useParams();
   const lang = params.lang as "id" | "en";
 
+  const [kategori, setKategori] = useState<kategori[]>([]);
   const [beritaTerbaru, setBeritaTerbaru] = useState<berita[]>([]);
   const [featureData, setFeatureData] = useState<berita[]>([]);
-  const [dictionary, setDictionary] = useState<any>(null);
+  const [dictionary, setDictionary] = useState<any>(null); //eslint-disable-line 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -49,17 +50,17 @@ export default function BeritaPage() {
             axios.get(dictionaryUrl),
           ]);
 
-        const processedBerita = beritaResponse.data.data.map((item: any) => ({
+        const processedBerita = beritaResponse.data.data.map((item: berita) => ({
           ...item,
-          deskripsi: convert(item.isi_berita || item.deskripsi, {
+          deskripsi: convert(item.deskripsi, {
             selectors: [{ selector: "img", format: "skip" }],
           }),
         }));
         setBeritaTerbaru(processedBerita);
 
-        const processedFeature = featureResponse.data.data.map((item: any) => ({
+        const processedFeature = featureResponse.data.data.map((item: berita) => ({
           ...item,
-          deskripsi: convert(item.isi_berita || item.deskripsi, {
+          deskripsi: convert(item.deskripsi, {
             selectors: [{ selector: "img", format: "skip" }],
           }),
         }));
@@ -75,7 +76,21 @@ export default function BeritaPage() {
     };
 
     fetchData();
-  }, [lang, baseurl]); // Jalankan ulang effect jika 'lang' berubah
+  }, [lang, baseurl]);
+
+  useEffect(() => {
+    const getKategori = async () => {
+      try {
+        const res = await axios.get(`${baseurl}/kategori`);
+        setKategori(res.data.data);
+        setError(null);
+      } catch (error) {
+        console.error("Error fetching category:", error);
+        setError("Failed to load category");
+      }
+    };
+    getKategori();
+  }, [baseurl]);
 
   if (loading || !dictionary) {
     return <div className="text-center p-5">Loading...</div>;
@@ -229,7 +244,7 @@ export default function BeritaPage() {
                             href={`${lang}/berita/show/${data.id}`}
                             className="bg-travel"
                           >
-                            {data.kategori?.nama || 'Uncategorized'}
+                            {data.kategori?.nama || "Uncategorized"}
                           </a>
                         </div>
                       </div>
@@ -311,7 +326,7 @@ export default function BeritaPage() {
                                 href={`/berita/show/${item.id}`}
                                 className="bg-lifestyle"
                               >
-                                {item.kategori?.nama || 'Uncategorized'}
+                                {item.kategori?.nama || "Uncategorized"}
                               </a>
                             </div>
                           </div>
@@ -388,58 +403,132 @@ export default function BeritaPage() {
 
       <div className="container clearfix">
         <div className="row clearfix">
-          <div className="col-lg-12">
-            <div className="mt-4">
+          {/* */}
+          <div className="col-lg-8">
+            <div className="mt-0">
               <h4 className="mb-2 ls1 text-uppercase fw-bold">Feature</h4>
               <div className="line line-xs line-sports"></div>
-              <div className="row">
+
+              <div className="row col-mb-50 mb-0">
                 {featureData.map((item) => (
-                  <div key={item.id} className="col-md-6 mb-4">
-                    <div className="entry h-100">
-                      <div className="grid-inner row g-0 h-100">
-                        <div className="col-md-5">
-                          <div className="entry-image h-100">
-                            <Link
-                              href={`/${lang}/berita/show/${
-                                item.id || item.id
-                              }`}
-                            >
-                              <Image
-                                src={
-                                  item.cover ||
-                                  `https://apidev.tvku.tv/storage/${item.cover}`
-                                }
-                                alt={item.judul}
-                                width={300}
-                                height={200}
-                                className="rounded h-100"
-                                style={{ objectFit: "cover" }}
-                              />
-                            </Link>
-                          </div>
+                  <div key={item.id} className="posts-md">
+                    <div className="entry row mb-5">
+                      <div className="col-md-6">
+                        <div className="entry-image">
+                          <Link href={`/berita/show/${item.id}`}>
+                            <Image
+                              src={item.cover}
+                              alt={item.judul}
+                              width={600}
+                              height={300}
+                              className="rounded"
+                            />
+                          </Link>
                         </div>
-                        <div className="col-md-7 ps-md-4">
-                          <div className="entry-title title-sm nott mt-3 mt-md-0">
-                            <h3>
-                              <Link
-                                href={`/${lang}/berita/show/${
-                                  item.id || item.id
-                                }`}
-                              >
-                                {item.judul}
-                              </Link>
-                            </h3>
-                          </div>
-                          <div className="entry-content">
-                            <p className="mb-0 line-clamp-3">
-                              {item.deskripsi}
-                            </p>
-                          </div>
+                      </div>
+                      <div className="col-md-6 mt-3 mt-md-0">
+                        <div className="entry-title title-sm nott">
+                          <h3>
+                            <Link href={`/berita/show/${item.id}`}>
+                              {item.judul}
+                            </Link>
+                          </h3>
+                        </div>
+                        <div className="entry-meta">
+                          <ul>
+                            <li>
+                              <i className="icon-calendar3" />{" "}
+                              {new Date(item.waktu_publish).toLocaleDateString(
+                                "id-ID",
+                                {
+                                  year: "numeric",
+                                  month: "long",
+                                  day: "numeric",
+                                }
+                              )}
+                            </li>
+                          </ul>
+                        </div>
+                        <div className="entry-content">
+                          {/* Use dangerouslySetInnerHTML if you still want to render some parsed HTML, or just text */}
+                          <p className="mb-0 line-clamp-3">{item.deskripsi}</p>
                         </div>
                       </div>
                     </div>
                   </div>
                 ))}
+              </div>
+            </div>
+          </div>
+          {/* 2 sidebar */}
+          <div className="col-lg-4 sticky-sidebar-wrap kategoriberita">
+            <div className="sticky-sidebar">
+              <div className="widget widget_links clearfix">
+                <h4 className="mb-2 ls1 text-uppercase fw-bold">
+                  Kategori Berita
+                </h4>
+                <div className="line line-xs line-sports"></div>
+                <ul>
+                  {kategori.map((item) => (
+                    <li
+                      key={item.id_kategori}
+                      className="d-flex align-items-center"
+                    >
+                      <a
+                        href={`/berita/show/${item.id_kategori}`}
+                        className="flex-fill"
+                      >
+                        {item.nama}
+                      </a>
+                      <span className="badge text-light bg-sports">10</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div className="widget clearfix">
+                <h4 className="mb-2 ls1 text-uppercase fw-bold">
+                  Recent Posts
+                </h4>
+                <div className="line line-xs line-home"></div>
+                <div className="posts-sm row col-mb-30">
+                  {beritaTerbaru.slice(0, 4).map((item) => (
+                    <div key={item.id} className="entry col-12">
+                      <div className="grid-inner row align-items-center g-0">
+                        <div className="col-auto">
+                          <div className="entry-image">
+                            <a href={`/berita/show/${item.id}`}>
+                              <Image
+                                src={item.cover}
+                                alt={item.judul}
+                                width={400}
+                                height={200}
+                              />
+                            </a>
+                          </div>
+                        </div>
+                        <div className="col ps-3">
+                          <div className="entry-title">
+                            <h4 className="fw-semibold">
+                              <a href={`/berita/show/${item.id}`}>
+                                {item.judul}
+                              </a>
+                            </h4>
+                          </div>
+                          <div className="entry-meta">
+                            <ul>
+                              <li>
+                                <i className="icon-time"></i>
+                                <a href={`/berita/show/${item.id}`}>
+                                  {item.waktu_publish}
+                                </a>
+                              </li>
+                            </ul>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           </div>

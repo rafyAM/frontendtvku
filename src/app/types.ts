@@ -55,7 +55,6 @@ export interface apiResponse {
   data: berita[];
 }
 
-// beranda
 export interface homeSlider {
   id: number;
   judul: string;
