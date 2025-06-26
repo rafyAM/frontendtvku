@@ -8,8 +8,8 @@ import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 
 interface NavbarProps {
-  lang?: "id" | "en"; 
-  dictionary?: any;// eslint-disable-line
+  lang?: "id" | "en";
+  dictionary?: any; // eslint-disable-line
 }
 
 const Navbar = ({
@@ -29,10 +29,29 @@ const Navbar = ({
   const [loadingMegaMenuNews, setLoadingMegaMenuNews] = useState(false);
   const baseurl = process.env.NEXT_PUBLIC_BASE_URL;
 
+  const dictionary = propDictionary || {
+    Navbar: {
+      home: "Beranda",
+      news: "Berita",
+      language: "Bahasa",
+      indonesia: "Indonesia",
+      english: "Inggris",
+    },
+    Messages: {
+      loading: "Memuat...",
+      no_news_category: "Tidak ada berita untuk kategori ini.",
+      hover_category: "Arahkan kursor ke kategori untuk melihat berita.",
+    },
+  };
+
   useEffect(() => {
     const getKategori = async () => {
       try {
-        const resKategori = await axios.get(`${baseurl}/kategori`);
+        const url =
+          activeLang === "en"
+            ? `https://apidev.tvku.tv/api/kategori-translations?language_code=en`
+            : `${baseurl}/kategori`;
+        const resKategori = await axios.get(url);
         setCategories(resKategori.data.data);
       } catch (error) {
         console.error("Error fetching categories:", error);
@@ -40,15 +59,17 @@ const Navbar = ({
     };
 
     getKategori();
-  }, [baseurl]);
+  }, [baseurl, activeLang]);
 
   const fetchNewsForMegaMenu = useCallback(
     async (categoryId: number) => {
       setLoadingMegaMenuNews(true);
       try {
-        const res = await axios.get(
-          `${baseurl}/berita?id_kategori=${categoryId}`
-        );
+        const url =
+          activeLang === "en"
+            ? `${baseurl}kategori-translations?language_code=en&kategori_id=${categoryId}`
+            : `${baseurl}/berita?id_kategori=${categoryId}`;
+        const res = await axios.get(url);
         setMegaMenuNews(res.data.data);
       } catch (error) {
         console.error(`Error fetching news for category ${categoryId}:`, error);
@@ -57,7 +78,7 @@ const Navbar = ({
         setLoadingMegaMenuNews(false);
       }
     },
-    [baseurl]
+    [baseurl, activeLang]
   );
 
   const handleMegaMenuCategoryHover = (categoryId: number) => {
@@ -71,25 +92,12 @@ const Navbar = ({
   };
 
   const handleLanguageChange = (newLang: "id" | "en") => {
-    // Jika kita sudah di dalam path berita (e.g., /id/berita atau /en/berita/show/...)
     if (pathname.startsWith(`/${activeLang}/berita`)) {
       const newPathname = pathname.replace(`/${activeLang}/`, `/${newLang}/`);
       router.push(newPathname);
     } else {
-      // Jika kita di halaman lain (e.g., /), arahkan ke halaman berita dengan bahasa baru
       router.push(`/${newLang}/berita`);
     }
-  };
-
-  // Gunakan dictionary yang di-pass, atau fallback ke versi default jika tidak ada
-  const dictionary = propDictionary || {
-    Navbar: {
-      home: "Beranda",
-      news: "Berita",
-      language: "Bahasa",
-      indonesia: "Indonesia",
-      english: "Inggris",
-    },
   };
 
   return (
@@ -121,14 +129,11 @@ const Navbar = ({
                     <div>Beranda</div>
                   </Link>
                 </li>
-                {categories.slice(0, 5).map((item) => (
-                  <li
-                    key={item.id_kategori}
-                    className="menu-item menu-color-home"
-                  >
+                {categories.slice(0, 5).map((item, idx) => (
+                  <li key={idx} className="menu-item menu-color-home">
                     <Link
                       className="menu-link"
-                      href={`/berita/${item.id_kategori}`}
+                      href={`/berita/${item.id_kategori ? item.id_kategori : item.kategori_id}`}
                     >
                       <div>{item.nama}</div>
                     </Link>
