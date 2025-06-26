@@ -1,75 +1,78 @@
 "use client";
 
-import axios from "axios";
-import { useEffect, useState } from "react";
-import { use } from "react";
-import { useSearchParams } from "next/navigation";
+import React, { useEffect, useState } from "react";
+import { useParams, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { htmlToText } from "html-to-text";
+import axios from "axios";
+import { convert } from "html-to-text";
 
 import { berita, kategori, apiResponse } from "@/app/types";
-import SideBar from "@/app/components/sideBar";
+import Sidebar from "@/app/components/sideBar"; 
 
-export default function Page({
-  params,
-}: {
-  params: Promise<{ id_kategori: string }>;
-}) {
-  const { id_kategori } = use(params);
+export default function KategoriBeritaPage() {
+  const params = useParams();
   const searchParams = useSearchParams();
 
-  const baseurl = process.env.NEXT_PUBLIC_BASE_URL;
+  const id_kategori = params.id_kategori as string;
+  const lang = (params.lang as "id" | "en") || "id";
+  const currentPage = parseInt(searchParams.get("page") || "1", 10);
 
-  const [kategoriData, setKategoriData] = useState<kategori | null>(null);
-  const [beritaApiResponse, setBeritaApiResponse] =
-    useState<apiResponse | null>(null);
+  const [kategori, setKategori] = useState<kategori | null>(null);
+  const [beritaApiResponse, setBeritaApiResponse] = useState<apiResponse | null>(null);
+  const [dictionary, setDictionary] = useState<any>(null); //eslint-disable-line 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const currentPage = parseInt(searchParams.get("page") || "1", 10);
+  const baseurl = process.env.NEXT_PUBLIC_BASE_URL;
 
   useEffect(() => {
-    const getKategori = async () => {
+    if (!lang || !id_kategori) return;
+
+    const fetchData = async () => {
+      setLoading(true);
+      setError(null);
+
       try {
-        const res = await axios.get(`${baseurl}/kategori/${id_kategori}`);
-        setKategoriData(res.data);
-        setError(null);
-      } catch (error) {
-        console.error("Error fetching category:", error);
-        setError("Failed to load category");
-        setKategoriData(null);
-      }
-    };
-    getKategori();
-  }, [baseurl, id_kategori]);
+        const beritaUrl =
+          lang === "en"
+            ? `https://apidev.tvku.tv/api/berita-translations?language_code=en&id_kategori=${id_kategori}&current_page=${currentPage}`
+            : `${baseurl}/berita?id_kategori=${id_kategori}&current_page=${currentPage}`;
 
-  useEffect(() => {
-    const getBerita = async () => {
-      try {
-        setLoading(true);
-        const res = await axios.get(
-          `${baseurl}/berita?id_kategori=${id_kategori}&current_page=${currentPage}`
-        );
-        const data: apiResponse = res.data;
+        const kategoriUrl = `${baseurl}/kategori/${id_kategori}`;
+        const dictionaryUrl = `/dictionaries/${lang}.json`;
 
-        const cleanedData = data.data.map((item: berita) => ({
-          ...item,
-          deskripsi: htmlToText(item.deskripsi, { wordwrap: false }),
-        }));
+        const [beritaResponse, kategoriResponse, dictionaryResponse] =
+          await Promise.all([
+            axios.get(beritaUrl),
+            axios.get(kategoriUrl),
+            axios.get(dictionaryUrl),
+          ]);
 
-        setBeritaApiResponse({ ...data, data: cleanedData });
-        setError(null);
-      } catch (error) {
-        console.error("Error fetching news:", error);
-        setError("Failed to load news");
-        setBeritaApiResponse(null);
+        const processedBerita: apiResponse = {
+          ...beritaResponse.data,
+          data: beritaResponse.data.data.map((item: berita) => ({
+            ...item,
+            deskripsi: convert(item.deskripsi, {
+              selectors: [{ selector: "img", format: "skip" }],
+            }),
+          })),
+        };
+        setBeritaApiResponse(processedBerita);
+
+        setKategori(kategoriResponse.data);
+        setDictionary(dictionaryResponse.data);
+
+      } catch (err) {
+        console.error("Failed to fetch data:", err);
+        setError("Gagal memuat data. Silakan coba lagi nanti.");
       } finally {
         setLoading(false);
       }
     };
-    getBerita();
-  }, [baseurl, id_kategori, currentPage]);
+
+    fetchData();
+  }, [lang, id_kategori, currentPage, baseurl]);
 
   const getPageRange = () => {
     const pages: (number | string)[] = [];
@@ -88,21 +91,13 @@ export default function Page({
         pages.push("...");
       } else if (currentPage > 5 && currentPage < total_no_of_pages - 4) {
         pages.push("...");
-        for (
-          let counter = currentPage - adjacents;
-          counter <= currentPage + adjacents;
-          counter++
-        ) {
+        for (let counter = currentPage - adjacents; counter <= currentPage + adjacents; counter++) {
           pages.push(counter);
         }
         pages.push("...");
       } else {
         pages.push("...");
-        for (
-          let counter = total_no_of_pages - 6;
-          counter <= total_no_of_pages;
-          counter++
-        ) {
+        for (let counter = total_no_of_pages - 6; counter <= total_no_of_pages; counter++) {
           pages.push(counter);
         }
       }
@@ -110,19 +105,28 @@ export default function Page({
     return pages;
   };
 
-  if (loading) return <div className="text-center p-5">Loading...</div>;
-  if (error) return <div className="text-center p-5 text-red-500">{error}</div>;
-  if (!kategoriData)
-    return <div className="text-center p-5">Category not found.</div>;
-  if (!beritaApiResponse || beritaApiResponse.data.length === 0)
+  if (loading || !dictionary) {
+    return <div className="text-center p-5">Loading...</div>;
+  }
+
+  if (error) {
+    return <div className="text-center p-5 text-red-500">{error}</div>;
+  }
+
+  if (!kategori) {
+    return <div className="text-center p-5">{dictionary?.kategori_page?.not_found || "Kategori tidak ditemukan."}</div>;
+  }
+
+  if (!beritaApiResponse || beritaApiResponse.data.length === 0) {
     return (
       <div className="text-center p-5">
-        Tidak ada berita untuk kategori ini.
+        {dictionary?.kategori_page?.no_news || "Tidak ada berita untuk kategori ini."}
       </div>
     );
+  }
 
   const total_no_of_pages = beritaApiResponse.last_page;
-  const baseUrlLink = `/berita/${id_kategori}`;
+  const baseUrlLink = `/${lang}/berita/${id_kategori}`;
   const displayedPages = getPageRange();
 
   const firstpage_class = currentPage > 1 ? "" : "disabled";
@@ -141,7 +145,7 @@ export default function Page({
             <div className="row col-mb-50">
               <div className="col-12">
                 <div className="mb-2 ls1 text-uppercase fw-bold">
-                  <h3>{kategoriData.nama}</h3>
+                  <h3>{kategori.nama}</h3>
                   <div className="line line-xs line-sports"></div>
                 </div>
                 {beritaApiResponse.data.map((item) => (
@@ -149,7 +153,7 @@ export default function Page({
                     <div className="entry row mb-5">
                       <div className="col-md-6">
                         <div className="entry-image">
-                          <Link href={`/berita/show/${item.id}`}>
+                          <Link href={`/${lang}/berita/show/${item.id}`}>
                             <Image
                               src={item.cover}
                               alt={item.judul}
@@ -163,7 +167,7 @@ export default function Page({
                       <div className="col-md-6 mt-3 mt-md-0">
                         <div className="entry-title title-sm nott">
                           <h3>
-                            <Link href={`/berita/show/${item.id}`}>
+                            <Link href={`/${lang}/berita/show/${item.id}`}>
                               {item.judul}
                             </Link>
                           </h3>
@@ -172,14 +176,11 @@ export default function Page({
                           <ul>
                             <li>
                               <i className="icon-calendar3" />{" "}
-                              {new Date(item.waktu_publish).toLocaleDateString(
-                                "id-ID",
-                                {
-                                  year: "numeric",
-                                  month: "long",
-                                  day: "numeric",
-                                }
-                              )}
+                              {new Date(item.waktu_publish).toLocaleDateString(lang === "id" ? "id-ID" : "en-US", {
+                                year: "numeric",
+                                month: "long",
+                                day: "numeric",
+                              })}
                             </li>
                           </ul>
                         </div>
@@ -192,30 +193,20 @@ export default function Page({
                 ))}
               </div>
             </div>
-            {total_no_of_pages > 0 && (
+            {total_no_of_pages > 1 && (
               <div className="row col-md-12 mt-5">
                 <div className="text-center">
                   <ul className="pagination pagination-rounded flex-wrap justify-center">
                     {/* First Page */}
                     <li className={`page-item ${firstpage_class}`}>
-                      <Link
-                        className="page-link"
-                        href={`${baseUrlLink}?page=1`}
-                        aria-label="First"
-                        tabIndex={currentPage === 1 ? -1 : undefined}
-                      >
+                      <Link className="page-link" href={`${baseUrlLink}?page=1`} aria-label="First" tabIndex={currentPage === 1 ? -1 : undefined}>
                         <span aria-hidden="true">&laquo;</span>
                       </Link>
                     </li>
 
                     {/* Previous Page */}
                     <li className={`page-item ${previouspage_class}`}>
-                      <Link
-                        className="page-link"
-                        href={`${baseUrlLink}?page=${previous_page}`}
-                        aria-label="Previous"
-                        tabIndex={currentPage <= 1 ? -1 : undefined}
-                      >
+                      <Link className="page-link" href={`${baseUrlLink}?page=${previous_page}`} aria-label="Previous" tabIndex={currentPage <= 1 ? -1 : undefined}>
                         <span aria-hidden="true">&lsaquo;</span>
                       </Link>
                     </li>
@@ -224,53 +215,28 @@ export default function Page({
                     {displayedPages.map((pageNumber, index) => (
                       <li
                         key={index}
-                        className={`page-item ${
-                          pageNumber === currentPage ? "active" : ""
-                        } ${typeof pageNumber === "string" ? "disabled" : ""}`}
+                        className={`page-item ${pageNumber === currentPage ? "active" : ""} ${typeof pageNumber === "string" ? "disabled" : ""}`}
                       >
                         {typeof pageNumber === "number" ? (
-                          <Link
-                            href={`${baseUrlLink}?page=${pageNumber}`}
-                            className={`page-link px-3 py-2 border rounded-md ${
-                              pageNumber === currentPage
-                                ? "bg-blue-500 text-white"
-                                : "text-gray-700 hover:bg-gray-100"
-                            }`}
-                          >
+                          <Link href={`${baseUrlLink}?page=${pageNumber}`} className="page-link">
                             {pageNumber}
                           </Link>
                         ) : (
-                          <span className="page-link px-3 py-2 border rounded-md text-gray-700">
-                            {pageNumber}
-                          </span>
+                          <span className="page-link">{pageNumber}</span>
                         )}
                       </li>
                     ))}
 
                     {/* Next Page */}
                     <li className={`page-item ${nextpage_class}`}>
-                      <Link
-                        className="page-link"
-                        href={`${baseUrlLink}?page=${next_page}`}
-                        aria-label="Next"
-                        tabIndex={
-                          currentPage >= total_no_of_pages ? -1 : undefined
-                        }
-                      >
+                      <Link className="page-link" href={`${baseUrlLink}?page=${next_page}`} aria-label="Next" tabIndex={currentPage >= total_no_of_pages ? -1 : undefined}>
                         <span aria-hidden="true">&rsaquo;</span>
                       </Link>
                     </li>
 
                     {/* Last Page */}
                     <li className={`page-item ${lastpage_class}`}>
-                      <Link
-                        className="page-link"
-                        href={`${baseUrlLink}?page=${total_no_of_pages}`}
-                        aria-label="Last"
-                        tabIndex={
-                          currentPage >= total_no_of_pages ? -1 : undefined
-                        }
-                      >
+                      <Link className="page-link" href={`${baseUrlLink}?page=${total_no_of_pages}`} aria-label="Last" tabIndex={currentPage >= total_no_of_pages ? -1 : undefined}>
                         <span aria-hidden="true">&raquo;</span>
                       </Link>
                     </li>
@@ -280,7 +246,8 @@ export default function Page({
             )}
           </div>
         </div>
-        <SideBar />
+        {/* Menggunakan komponen Sidebar yang sama */}
+        <Sidebar />
       </div>
     </>
   );

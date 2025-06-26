@@ -1,50 +1,72 @@
 "use client";
 
-import axios from "axios";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
+import { useParams, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { htmlToText } from "html-to-text";
+import axios from "axios";
+import { convert } from "html-to-text";
 
 import { berita, apiResponse } from "@/app/types";
-import SideBar from "@/app/components/sideBar";
+import Sidebar from "@/app/components/sideBar";
 
-export default function Page() {
-  const baseurl = process.env.NEXT_PUBLIC_BASE_URL;
+export default function BeritaTerbaruPage() {
+  const params = useParams();
+  const searchParams = useSearchParams();
 
-  const [beritaApiResponse, setBeritaApiResponse] =
-    useState<apiResponse | null>(null);
+  const lang = (params.lang as "id" | "en") || "id";
+  const currentPage = parseInt(searchParams.get("page") || "1", 10);
+
+  const [beritaApiResponse, setBeritaApiResponse] = useState<apiResponse | null>(null);
+  const [dictionary, setDictionary] = useState<any>(null); // eslint-disable-line
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const [currentPage, setCurrentPage] = useState(1);
+  const baseurl = process.env.NEXT_PUBLIC_BASE_URL;
 
   useEffect(() => {
-    const getBerita = async () => {
+    if (!lang) return;
+
+    const fetchData = async () => {
+      setLoading(true);
+      setError(null);
+
       try {
-        setLoading(true);
-        const res = await axios.get(
-          `${baseurl}/berita?current_page=${currentPage}`
-        );
-        const data: apiResponse = res.data;
+        const beritaUrl =
+          lang === "en"
+            ? `https://apidev.tvku.tv/api/berita-translations?language_code=en&current_page=${currentPage}`
+            : `${baseurl}/berita?current_page=${currentPage}`;
+        
+        const dictionaryUrl = `/dictionaries/${lang}.json`;
 
-        const cleanedData = data.data.map((item: berita) => ({
-          ...item,
-          deskripsi: htmlToText(item.deskripsi, { wordwrap: false }),
-        }));
+        const [beritaResponse, dictionaryResponse] = await Promise.all([
+          axios.get(beritaUrl),
+          axios.get(dictionaryUrl),
+        ]);
 
-        setBeritaApiResponse({ ...data, data: cleanedData });
-        setError(null);
-      } catch (error) {
-        console.error("Error fetching news:", error);
-        setError("Failed to load news");
-        setBeritaApiResponse(null);
+        const processedBerita: apiResponse = {
+          ...beritaResponse.data,
+          data: beritaResponse.data.data.map((item: berita) => ({
+            ...item,
+            deskripsi: convert(item.deskripsi, {
+              selectors: [{ selector: "img", format: "skip" }],
+            }),
+          })),
+        };
+
+        setBeritaApiResponse(processedBerita);
+        setDictionary(dictionaryResponse.data);
+
+      } catch (err) {
+        console.error("Failed to fetch data:", err);
+        setError("Gagal memuat data. Silakan coba lagi nanti.");
       } finally {
         setLoading(false);
       }
     };
-    getBerita();
-  }, [baseurl, currentPage]);
+
+    fetchData();
+  }, [lang, currentPage, baseurl]);
 
   const getPageRange = () => {
     const pages: (number | string)[] = [];
@@ -85,16 +107,24 @@ export default function Page() {
     return pages;
   };
 
-  if (loading) return <div className="text-center p-5">Loading...</div>;
-  if (error) return <div className="text-center p-5 text-red-500">{error}</div>;
-  if (!beritaApiResponse || beritaApiResponse.data.length === 0)
+  if (loading || !dictionary) {
+    return <div className="text-center p-5">Loading...</div>;
+  }
+
+  if (error) {
+    return <div className="text-center p-5 text-red-500">{error}</div>;
+  }
+  
+  if (!beritaApiResponse || beritaApiResponse.data.length === 0) {
     return (
       <div className="text-center p-5">
-        Tidak ada berita untuk kategori ini.
+        {dictionary?.berita_page?.no_news || "Tidak ada berita."}
       </div>
     );
+  }
 
   const total_no_of_pages = beritaApiResponse.last_page;
+  const baseUrlLink = `/${lang}/berita/beritaterbaru`;
   const displayedPages = getPageRange();
 
   const firstpage_class = currentPage > 1 ? "" : "disabled";
@@ -113,7 +143,8 @@ export default function Page() {
             <div className="row col-mb-50">
               <div className="col-12">
                 <div className="mb-2 ls1 text-uppercase fw-bold">
-                  <h3>berita terbaru</h3>
+                  {/* Menggunakan dictionary untuk judul */}
+                  <h3>{dictionary.berita_page.latest_news}</h3>
                   <div className="line line-xs line-sports"></div>
                 </div>
                 {beritaApiResponse.data.map((item) => (
@@ -121,7 +152,7 @@ export default function Page() {
                     <div className="entry row mb-5">
                       <div className="col-md-6">
                         <div className="entry-image">
-                          <Link href={`/berita/show/${item.id}`}>
+                          <Link href={`/${lang}/berita/show/${item.id}`}>
                             <Image
                               src={item.cover}
                               alt={item.judul}
@@ -135,7 +166,7 @@ export default function Page() {
                       <div className="col-md-6 mt-3 mt-md-0">
                         <div className="entry-title title-sm nott">
                           <h3>
-                            <Link href={`/berita/show/${item.id}`}>
+                            <Link href={`/${lang}/berita/show/${item.id}`}>
                               {item.judul}
                             </Link>
                           </h3>
@@ -145,7 +176,7 @@ export default function Page() {
                             <li>
                               <i className="icon-calendar3" />{" "}
                               {new Date(item.waktu_publish).toLocaleDateString(
-                                "id-ID",
+                                lang === "id" ? "id-ID" : "en-US",
                                 {
                                   year: "numeric",
                                   month: "long",
@@ -164,31 +195,21 @@ export default function Page() {
                 ))}
               </div>
             </div>
-            {total_no_of_pages > 0 && (
+            {total_no_of_pages > 1 && (
               <div className="row col-md-12 mt-5">
                 <div className="text-center">
                   <ul className="pagination pagination-rounded flex-wrap justify-center">
-                    {/* First Page */}
+                    {/* Menggunakan Link untuk pagination */}
                     <li className={`page-item ${firstpage_class}`}>
-                      <button
-                        className="page-link"
-                        onClick={() => setCurrentPage(1)}
-                        aria-label="First"
-                        disabled={currentPage === 1}
-                      >
+                      <Link className="page-link" href={`${baseUrlLink}?page=1`} aria-label="First">
                         <span aria-hidden="true">&laquo;</span>
-                      </button>
+                      </Link>
                     </li>
 
                     <li className={`page-item ${previouspage_class}`}>
-                      <button
-                        className="page-link"
-                        onClick={() => setCurrentPage(previous_page)}
-                        aria-label="Previous"
-                        disabled={currentPage <= 1}
-                      >
+                      <Link className="page-link" href={`${baseUrlLink}?page=${previous_page}`} aria-label="Previous">
                         <span aria-hidden="true">&lsaquo;</span>
-                      </button>
+                      </Link>
                     </li>
 
                     {displayedPages.map((pageNumber, index) => (
@@ -199,44 +220,25 @@ export default function Page() {
                         } ${typeof pageNumber === "string" ? "disabled" : ""}`}
                       >
                         {typeof pageNumber === "number" ? (
-                          <button
-                            onClick={() => setCurrentPage(pageNumber)}
-                            className={`page-link px-3 py-2 border rounded-md ${
-                              pageNumber === currentPage
-                                ? "bg-blue-500 text-white"
-                                : "text-gray-700 hover:bg-gray-100"
-                            }`}
-                          >
+                           <Link href={`${baseUrlLink}?page=${pageNumber}`} className="page-link">
                             {pageNumber}
-                          </button>
+                          </Link>
                         ) : (
-                          <span className="page-link px-3 py-2 border rounded-md text-gray-700">
-                            {pageNumber}
-                          </span>
+                          <span className="page-link">{pageNumber}</span>
                         )}
                       </li>
                     ))}
 
                     <li className={`page-item ${nextpage_class}`}>
-                      <button
-                        className="page-link"
-                        onClick={() => setCurrentPage(next_page)}
-                        aria-label="Next"
-                        disabled={currentPage >= total_no_of_pages}
-                      >
+                      <Link className="page-link" href={`${baseUrlLink}?page=${next_page}`} aria-label="Next">
                         <span aria-hidden="true">&rsaquo;</span>
-                      </button>
+                      </Link>
                     </li>
 
                     <li className={`page-item ${lastpage_class}`}>
-                      <button
-                        className="page-link"
-                        onClick={() => setCurrentPage(total_no_of_pages)}
-                        aria-label="Last"
-                        disabled={currentPage >= total_no_of_pages}
-                      >
+                      <Link className="page-link" href={`${baseUrlLink}?page=${total_no_of_pages}`} aria-label="Last">
                         <span aria-hidden="true">&raquo;</span>
-                      </button>
+                      </Link>
                     </li>
                   </ul>
                 </div>
@@ -244,7 +246,7 @@ export default function Page() {
             )}
           </div>
         </div>
-        <SideBar />
+        <Sidebar />
       </div>
     </>
   );
