@@ -8,7 +8,7 @@ import axios from "axios";
 import { convert } from "html-to-text";
 
 import { berita, kategori, apiResponse } from "@/app/types";
-import Sidebar from "@/app/components/sideBar"; 
+import Sidebar from "@/app/components/sideBar";
 
 export default function KategoriBeritaPage() {
   const params = useParams();
@@ -19,8 +19,9 @@ export default function KategoriBeritaPage() {
   const currentPage = parseInt(searchParams.get("page") || "1", 10);
 
   const [kategori, setKategori] = useState<kategori | null>(null);
-  const [beritaApiResponse, setBeritaApiResponse] = useState<apiResponse | null>(null);
-  const [dictionary, setDictionary] = useState<any>(null); //eslint-disable-line 
+  const [beritaApiResponse, setBeritaApiResponse] =
+    useState<apiResponse | null>(null);
+  const [dictionary, setDictionary] = useState<any>(null); //eslint-disable-line
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -39,7 +40,10 @@ export default function KategoriBeritaPage() {
             ? `https://apidev.tvku.tv/api/berita-translations?language_code=en&id_kategori=${id_kategori}&current_page=${currentPage}`
             : `${baseurl}/berita?id_kategori=${id_kategori}&current_page=${currentPage}`;
 
-        const kategoriUrl = `${baseurl}/kategori/${id_kategori}`;
+        const kategoriUrl =
+          lang === "en"
+            ? `https://apidev.tvku.tv/api/kategori-translations?language_code=en&id_kategori=${id_kategori}`
+            : `${baseurl}/kategori/${id_kategori}`;
         const dictionaryUrl = `/dictionaries/${lang}.json`;
 
         const [beritaResponse, kategoriResponse, dictionaryResponse] =
@@ -60,9 +64,18 @@ export default function KategoriBeritaPage() {
         };
         setBeritaApiResponse(processedBerita);
 
-        setKategori(kategoriResponse.data);
+        if (
+          lang === "en" &&
+          kategoriResponse.data.data &&
+          kategoriResponse.data.data.length > 0
+        ) {
+          setKategori(kategoriResponse.data.data[0]);
+        } else {
+          setKategori(kategoriResponse.data);
+        }
+        // setKategori(kategoriResponse.data);
         setDictionary(dictionaryResponse.data);
-
+        console.log("Kategori:", kategoriResponse.data);
       } catch (err) {
         console.error("Failed to fetch data:", err);
         setError("Gagal memuat data. Silakan coba lagi nanti.");
@@ -91,13 +104,21 @@ export default function KategoriBeritaPage() {
         pages.push("...");
       } else if (currentPage > 5 && currentPage < total_no_of_pages - 4) {
         pages.push("...");
-        for (let counter = currentPage - adjacents; counter <= currentPage + adjacents; counter++) {
+        for (
+          let counter = currentPage - adjacents;
+          counter <= currentPage + adjacents;
+          counter++
+        ) {
           pages.push(counter);
         }
         pages.push("...");
       } else {
         pages.push("...");
-        for (let counter = total_no_of_pages - 6; counter <= total_no_of_pages; counter++) {
+        for (
+          let counter = total_no_of_pages - 6;
+          counter <= total_no_of_pages;
+          counter++
+        ) {
           pages.push(counter);
         }
       }
@@ -114,13 +135,18 @@ export default function KategoriBeritaPage() {
   }
 
   if (!kategori) {
-    return <div className="text-center p-5">{dictionary?.kategori_page?.not_found || "Kategori tidak ditemukan."}</div>;
+    return (
+      <div className="text-center p-5">
+        {dictionary?.kategori_page?.not_found || "Kategori tidak ditemukan."}
+      </div>
+    );
   }
 
   if (!beritaApiResponse || beritaApiResponse.data.length === 0) {
     return (
       <div className="text-center p-5">
-        {dictionary?.kategori_page?.no_news || "Tidak ada berita untuk kategori ini."}
+        {dictionary?.kategori_page?.no_news ||
+          "Tidak ada berita untuk kategori ini."}
       </div>
     );
   }
@@ -176,11 +202,14 @@ export default function KategoriBeritaPage() {
                           <ul>
                             <li>
                               <i className="icon-calendar3" />{" "}
-                              {new Date(item.waktu_publish).toLocaleDateString(lang === "id" ? "id-ID" : "en-US", {
-                                year: "numeric",
-                                month: "long",
-                                day: "numeric",
-                              })}
+                              {new Date(item.waktu_publish).toLocaleDateString(
+                                lang === "id" ? "id-ID" : "en-US",
+                                {
+                                  year: "numeric",
+                                  month: "long",
+                                  day: "numeric",
+                                }
+                              )}
                             </li>
                           </ul>
                         </div>
@@ -199,14 +228,24 @@ export default function KategoriBeritaPage() {
                   <ul className="pagination pagination-rounded flex-wrap justify-center">
                     {/* First Page */}
                     <li className={`page-item ${firstpage_class}`}>
-                      <Link className="page-link" href={`${baseUrlLink}?page=1`} aria-label="First" tabIndex={currentPage === 1 ? -1 : undefined}>
+                      <Link
+                        className="page-link"
+                        href={`${baseUrlLink}?page=1`}
+                        aria-label="First"
+                        tabIndex={currentPage === 1 ? -1 : undefined}
+                      >
                         <span aria-hidden="true">&laquo;</span>
                       </Link>
                     </li>
 
                     {/* Previous Page */}
                     <li className={`page-item ${previouspage_class}`}>
-                      <Link className="page-link" href={`${baseUrlLink}?page=${previous_page}`} aria-label="Previous" tabIndex={currentPage <= 1 ? -1 : undefined}>
+                      <Link
+                        className="page-link"
+                        href={`${baseUrlLink}?page=${previous_page}`}
+                        aria-label="Previous"
+                        tabIndex={currentPage <= 1 ? -1 : undefined}
+                      >
                         <span aria-hidden="true">&lsaquo;</span>
                       </Link>
                     </li>
@@ -215,10 +254,15 @@ export default function KategoriBeritaPage() {
                     {displayedPages.map((pageNumber, index) => (
                       <li
                         key={index}
-                        className={`page-item ${pageNumber === currentPage ? "active" : ""} ${typeof pageNumber === "string" ? "disabled" : ""}`}
+                        className={`page-item ${
+                          pageNumber === currentPage ? "active" : ""
+                        } ${typeof pageNumber === "string" ? "disabled" : ""}`}
                       >
                         {typeof pageNumber === "number" ? (
-                          <Link href={`${baseUrlLink}?page=${pageNumber}`} className="page-link">
+                          <Link
+                            href={`${baseUrlLink}?page=${pageNumber}`}
+                            className="page-link"
+                          >
                             {pageNumber}
                           </Link>
                         ) : (
@@ -229,14 +273,28 @@ export default function KategoriBeritaPage() {
 
                     {/* Next Page */}
                     <li className={`page-item ${nextpage_class}`}>
-                      <Link className="page-link" href={`${baseUrlLink}?page=${next_page}`} aria-label="Next" tabIndex={currentPage >= total_no_of_pages ? -1 : undefined}>
+                      <Link
+                        className="page-link"
+                        href={`${baseUrlLink}?page=${next_page}`}
+                        aria-label="Next"
+                        tabIndex={
+                          currentPage >= total_no_of_pages ? -1 : undefined
+                        }
+                      >
                         <span aria-hidden="true">&rsaquo;</span>
                       </Link>
                     </li>
 
                     {/* Last Page */}
                     <li className={`page-item ${lastpage_class}`}>
-                      <Link className="page-link" href={`${baseUrlLink}?page=${total_no_of_pages}`} aria-label="Last" tabIndex={currentPage >= total_no_of_pages ? -1 : undefined}>
+                      <Link
+                        className="page-link"
+                        href={`${baseUrlLink}?page=${total_no_of_pages}`}
+                        aria-label="Last"
+                        tabIndex={
+                          currentPage >= total_no_of_pages ? -1 : undefined
+                        }
+                      >
                         <span aria-hidden="true">&raquo;</span>
                       </Link>
                     </li>
